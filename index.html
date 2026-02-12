@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Great American Network — Parallax Microsite (Scaffold)</title>
+  <meta name="description" content="Union Pacific × The Future of Freight — parallax microsite scaffold with GSAP/ScrollTrigger, robust error handling, and diagnostics." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --up-yellow: #FFC700;
+      --up-navy: #003865;
+      --carbon: #1f1f1f;
+      --smoke: #0f0f0f;
+      --data-cyan: #27D4FF;
+      --text: #f4f7fb;
+      --muted: #cdd6e5;
+      --maxw: 1120px;
+      /* Brand tokens for reskin */
+      --up-blue: #003865;
+      --up-red: #c8102e;
+    }
+
+    /* When body has class="brand", remap navy to blue */
+    .brand {
+      --up-navy: var(--up-blue);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; scroll-behavior: smooth; background:#000; color: var(--text); }
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text, #f4f7fb); /* fallback */
+    }
+    h1, h2, h3 { line-height: 1.2; margin: 0 0 1.5rem; }
+    h1 { font-size: clamp(2rem, 6vw, 4rem); font-weight: 800; }
+    h2 { font-size: clamp(1.4rem, 3.6vw, 2.4rem); font-weight: 800; }
+    p {
+      font-size: clamp(1rem, 1.6vw, 1.15rem);
+      color: var(--muted);
+      margin: 0 0 1.25rem;
+      line-height: 1.7;
+      max-width: 65ch;
+    }
+    .wrap { width: min(95vw, var(--maxw)); margin: 0 auto; position: relative; z-index: 2; }
+
+    /* Section shells */
+    section { position: relative; min-height: 100svh; display: grid; place-items: center; overflow: hidden; }
+    .content { padding: 6rem 0; }
+
+    /* Parallax layers */
+    .layer { position: absolute; inset: 0; background-size: cover; background-position: center; will-change: transform, opacity; }
+
+    /* Hero */
+    #hero {
+      background:
+        radial-gradient(1200px 600px at 50% 120%, rgba(255,199,0,.05), transparent),
+        linear-gradient(180deg, #06090f 0%, #030509 100%);
+    }
+    #hero .rails {
+      background-image:
+        linear-gradient(to bottom, rgba(0,0,0,.1), rgba(0,0,0,.8)),
+        url('https://images.unsplash.com/photo-1568750467694-1fd0fdb21a4d?q=80&w=2000&auto=format&fit=crop');
+      filter: saturate(.9) contrast(1.05);
+      opacity: 0.7;
+    }
+    #hero .sun {
+      background: radial-gradient(600px 320px at 50% 90%, rgba(255,199,0,.25), rgba(255,199,0,0) 70%);
+    }
+    #hero .grid {
+      background-image: radial-gradient(circle at 50% 50%, rgba(39,212,255,.25), transparent 60%);
+      mix-blend-mode: screen;
+      opacity: .3;
+    }
+    .eyebrow {
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--data-cyan);
+      font-weight: 600;
+      font-size: .85rem;
+      margin-bottom: 1rem;
+    }
+    .cta {
+      display: inline-block;
+      background: var(--up-yellow);
+      color: #0b0b0b;
+      padding: .9rem 1.2rem;
+      border-radius: 999px;
+      font-weight: 800;
+      text-decoration: none;
+      margin-top: 1.5rem;
+    }
+    .cta:hover { filter: brightness(1.05); transform: translateY(-1px); }
+
+    /* Squeeze split visuals */
+    .split {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: clamp(2rem, 4vw, 4rem);
+      align-items: center;
+    }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: clamp(1.5rem, 2.5vw, 2rem);
+      overflow: hidden;
+      position: relative;
+    }
+    .card p { max-width: 100%; }
+
+    /* Image containment for split sections */
+    .image-container {
+      height: 360px;
+      width: 100%;
+      border-radius: 12px;
+      background-size: cover !important;
+      background-position: center !important;
+      border: 1px solid transparent;
+    }
+    .card:not(.input-card) .image-container {
+      margin: calc(0px - clamp(1.5rem, 2.5vw, 2rem));
+      margin-top: calc(0px - clamp(1.5rem, 2.5vw, 2rem));
+      margin-bottom: calc(0px - clamp(1.5rem, 2.5vw, 2rem));
+      border-radius: 0 0 16px 16px;
+    }
+
+    /* Counters */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: clamp(.75rem, 2vw, 1.25rem);
+      margin-top: 2rem;
+    }
+    .kpi {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(39,212,255,.08), rgba(39,212,255,.02));
+      border: 1px solid rgba(39,212,255,.15);
+    }
+    .kpi .num {
+      font-family: 'Roboto Mono', ui-monospace, monospace;
+      font-weight: 600;
+      font-size: clamp(1.3rem, 3vw, 2rem);
+      color: var(--data-cyan);
+      margin-bottom: 0.5rem;
+    }
+    .kpi .label { font-size: .9rem; color: var(--muted); }
+
+    /* Advantage triangle (unused but left in case) */
+    .triangle { width: 320px; aspect-ratio: 1; margin: 2rem auto; position: relative; }
+    .triangle svg { width: 100%; height: 100%; }
+
+    /* Footers */
+    footer {
+      background: #05070b;
+      padding: 3rem 0;
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+    .shield {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--up-yellow), #ffd84f);
+      display: grid;
+      place-items: center;
+      color:#111;
+      font-weight: 900;
+    }
+
+    /* Reduce motion class for CSS-only fallback */
+    .no-motion * { transition: none !important; animation: none !important; }
+
+    /* Text alignment helpers */
+    .text-center { text-align: center; }
+    .text-center h2, .text-center p { margin-left: auto; margin-right: auto; }
+
+    /* Lists */
+    section ul {
+      margin: 1.5rem 0;
+      padding-left: 1.5rem;
+    }
+    section ul li {
+      font-size: clamp(1rem, 1.6vw, 1.15rem);
+      margin-bottom: 1rem;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+    section ul li:last-child { margin-bottom: 0; }
+
+    /* --- CALCULATOR GRID STYLES --- */
+    .calculator-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 1.5rem;
+      align-items: stretch;
+      margin-top: 3rem;
+    }
+    .input-card {
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .input-card h3 {
+      color: var(--up-yellow);
+      margin-top: 0;
+    }
+    .input-card label {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+    .input-card input[type="number"] {
+      padding: 0.75rem;
+      font-family: 'Roboto Mono', ui-monospace, monospace;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--data-cyan);
+      background: rgba(0, 56, 101, 0.5);
+      border: 1px solid var(--data-cyan);
+      border-radius: 8px;
+      width: 100%;
+      max-width: 250px;
+      text-align: center;
+      margin-top: 0.5rem;
+    }
+    .output-kpi {
+      padding: 1.5rem 1rem 0.5rem;
+    }
+    .output-kpi .result-detail {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.4;
+      margin-top: 1rem;
+      max-width: none;
+    }
+    /* --- END CALCULATOR STYLES --- */
+
+    @media (max-width: 900px) {
+      .split { grid-template-columns: 1fr; }
+      .kpis { grid-template-columns: repeat(2, 1fr); }
+      p { max-width: 100%; }
+      .calculator-grid { grid-template-columns: 1fr; }
+      .input-card input[type="number"] { max-width: 100%; }
+    }
+  </style>
+
+  <script>
+    /* ==========================
+       BRAND ASSET MANIFEST
+       ========================== */
+    window.BRAND = {
+      logoUrl: "https://i.imgur.com/LhmKd2g.png",
+      heroUrl: "https://i.imgur.com/OR9UNGC.jpeg",
+      yardUrl: "https://i.imgur.com/WJHvTs3.jpeg",
+      mapUrl: "https://i.imgur.com/REq9gle.png",
+      teamUrl: "https://i.imgur.com/xR1VZ2T.png",
+      commandCenterUrl: "https://i.imgur.com/D9ACdFE.png"
+    };
+
+    // Set to true to see detailed image loading info in console
+    window.DEBUG_IMAGES = true;
+  </script>
+</head>
+<body class="brand">
+  <script>
+    // Apply brand images at runtime
+    document.addEventListener('DOMContentLoaded', function applyBrandAssets(){
+      const { logoUrl, heroUrl, yardUrl, mapUrl, teamUrl, commandCenterUrl } = window.BRAND || {};
+      const debug = window.DEBUG_IMAGES || false;
+
+      if (debug) {
+        console.group('%c🖼️ Image Loading Debug', 'color: #FFC700; font-weight: bold;');
+        console.log('Logo URL:', logoUrl || '❌ Not set');
+        console.log('Hero URL:', heroUrl || '❌ Not set');
+        console.log('Yard URL:', yardUrl || '❌ Not set');
+        console.log('Map URL:', mapUrl || '❌ Not set');
+        console.log('Team URL:', teamUrl || '❌ Not set');
+        console.log('Command Center URL:', commandCenterUrl || '❌ Not set');
+      }
+
+      const setBg = (sel, url, name) => {
+        if (!url) {
+          if (debug) console.log(`⚠️  ${name}: No URL provided, skipping`);
+          return;
+        }
+        const el = document.querySelector(sel);
+        if (!el) {
+          if (debug) console.warn(`⚠️  ${name}: Element "${sel}" not found in DOM`);
+          return;
+        }
+
+        const testImg = new Image();
+        testImg.onload = () => {
+          el.style.backgroundImage = `url('${url}')`;
+          el.style.backgroundSize = 'cover';
+          el.style.backgroundPosition = 'center';
+          el.style.filter = 'none';
+          if (debug) console.log(`✅ ${name}: Loaded successfully`);
+        };
+        testImg.onerror = () => {
+          if (debug) console.error(`❌ ${name}: Failed to load. Check URL: ${url}`);
+          const indicator = document.createElement('div');
+          indicator.style.cssText = 'position:absolute; top:10px; left:10px; background:rgba(255,0,0,0.8); color:white; padding:8px 12px; border-radius:4px; font-size:12px; z-index:9999;';
+          indicator.textContent = `${name} failed to load`;
+          if (el.style.position !== 'absolute' && el.style.position !== 'relative') {
+            el.style.position = 'relative';
+          }
+          el.appendChild(indicator);
+        };
+        testImg.src = url;
+      };
+
+      setBg('#hero .rails', heroUrl, 'Hero Image');
+      setBg('#squeeze-img', yardUrl, 'Yard Image');
+      setBg('#reimagined .layer', mapUrl, 'Map Image');
+      setBg('#digital-img', commandCenterUrl, 'Command Center Image');
+      setBg('#human-img', teamUrl, 'Team Image');
+
+      // Logo
+      if (logoUrl) {
+        if (debug) console.log('🔍 Starting logo load test...');
+        const shield = document.querySelector('.shield');
+        if (!shield) {
+          if (debug) console.error('❌ Logo: .shield element not found in DOM!');
+        } else {
+          if (debug) console.log('✓ Logo: .shield element found');
+          const testImg = new Image();
+          testImg.onload = () => {
+            shield.style.backgroundImage = `url('${logoUrl}')`;
+            shield.style.backgroundSize = 'contain';
+            shield.style.backgroundPosition = 'center';
+            shield.style.backgroundRepeat = 'no-repeat';
+            shield.style.background = 'none';
+            shield.textContent = '';
+            if (debug) console.log('✅ Logo: Loaded successfully and applied to .shield');
+          };
+          testImg.onerror = () => {
+            if (debug) console.error(`❌ Logo: Failed to load image from URL: ${logoUrl}`);
+            shield.textContent = 'UP';
+            shield.style.fontSize = '1.2rem';
+          };
+          if (debug) console.log('📡 Logo: Starting image test request...');
+          testImg.src = logoUrl;
+        }
+      } else {
+        if (debug) console.log('⚠️  Logo: No URL provided, showing "UP" text');
+      }
+
+      if (debug) {
+        console.log('\n💡 Tip: Check the messages above. ✅ = success, ❌ = failed, ⚠️ = not set');
+        console.groupEnd();
+      }
+    });
+  </script>
+
+  <noscript>
+    <div class="wrap" style="padding:1rem; background:#220; color:#ffd; border-bottom:1px solid #552;">
+      JavaScript is disabled — parallax and counters are unavailable. Content remains readable.
+    </div>
+  </noscript>
+
+  <section id="hero" aria-label="Hero">
+    <div class="layer rails" data-parallax-depth="0.15"></div>
+    <div class="layer sun" data-parallax-depth="0.25"></div>
+    <div class="layer grid" data-parallax-depth="0.35"></div>
+    <div class="wrap content">
+      <div class="eyebrow">Union Pacific × The Future of Freight</div>
+      <h1>The great American network is being rebuilt — smarter, faster, cleaner.</h1>
+      <p>From the ports of Southern California to the heartland and beyond, Union Pacific is transforming 32,000 miles of track into the intelligent backbone of American logistics.</p>
+      <a href="#squeeze" class="cta">Begin the Journey ↓</a>
+    </div>
+  </section>
+
+  <section id="squeeze" aria-labelledby="squeeze-h">
+    <div class="wrap content split">
+      <div>
+        <h2 id="squeeze-h">America's freight system is under strain.</h2>
+        <p>Trucking costs rise, drivers are scarce, and emissions targets tighten. Congested highways slow the economy. Shippers need resilience that moves as fast as demand.</p>
+        <p>Union Pacific set out to match truck-speed service with rail-scale economics.</p>
+        <div class="card" role="note">
+          <strong>Modal advantage:</strong>
+          <p>One intermodal train can replace <strong>≈300</strong> long-haul trucks while cutting greenhouse gases up to <strong>75%</strong> per ton-mile.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div
+          class="image-container"
+          id="squeeze-img"
+          style="background: conic-gradient(from 0deg, #e33, #f80, #ff0, #0f0, #0ff, #33f, #e33); filter: blur(30px) saturate(.8) opacity(.75);">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="reimagined" aria-labelledby="reim-h" style="background: #000;">
+    <div class="layer"
+      style="background-image: linear-gradient(to bottom, rgba(0,0,0,.3), rgba(0,0,0,.7)), url('https://i.imgur.com/REq9gle.png'); opacity: 0.9; background-size: cover; background-position: center;">
+    </div>
+    <div class="wrap content" style="position: relative; z-index: 2;">
+      <h2 id="reim-h">The backbone of commerce, reimagined for a digital era.</h2>
+      <p>With <strong>32,880</strong> route miles across <strong>23 states</strong> and access to ~<strong>100</strong> ports, Union Pacific already connects American industry.</p>
+      <p>Now, data and AI are turning that reach into intelligence—rail that rivals trucking for speed and reliability while surpassing it on cost and emissions.</p>
+    </div>
+  </section>
+
+  <section id="digital" aria-labelledby="digital-h">
+    <div class="wrap content split">
+      <div>
+        <h2 id="digital-h">Steel meets software.</h2>
+        <ul>
+          <li><strong>Adaptive Transportation Planning</strong> — AI-driven schedules & asset placement, targeting ~$100M productivity over three years.</li>
+          <li><strong>Terminal Command Centers</strong> — national dashboards orchestrating yard fluidity.</li>
+          <li><strong>RailPulse IoT & GPS</strong> — container-level visibility door to door.</li>
+          <li><strong>UP APIs & UPGo</strong> — frictionless ordering, billing, tracking.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div
+          class="image-container"
+          id="digital-img"
+          style="background: linear-gradient(135deg, rgba(39,212,255,.2), rgba(39,212,255,.05)); border:1px solid rgba(39,212,255,.25);">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="proof" aria-labelledby="proof-h">
+    <div class="wrap content">
+      <h2 id="proof-h">The numbers tell the story.</h2>
+      <p>2025 performance set new records, translating directly into reliability and confidence for shippers.</p>
+      <div class="kpis" aria-live="polite">
+        <div class="kpi">
+          <div class="num" data-count="226" data-suffix=" mi/day">0</div>
+          <div class="label">Freight-car velocity</div>
+        </div>
+        <div class="kpi">
+          <div class="num" data-count="20.4" data-decimals="1" data-suffix=" hrs">0</div>
+          <div class="label">Terminal dwell</div>
+        </div>
+        <div class="kpi">
+          <div class="num" data-count="9801" data-suffix=" ft">0</div>
+          <div class="label">Avg train length</div>
+        </div>
+        <div class="kpi">
+          <div class="num" data-count="58.5" data-decimals="1" data-suffix=" %">0</div>
+          <div class="label">Adj operating ratio</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="human" aria-labelledby="human-h">
+    <div class="wrap content split">
+      <div>
+        <h2 id="human-h">The human engine</h2>
+        <p>Behind the data are 32,000 employees guided by one formula: <strong>Safety + Service + Operational Excellence = Growth</strong>.</p>
+        <p>Digital tools amplify frontline judgment so the railroad moves faster, safer, and smarter.</p>
+      </div>
+      <div class="card">
+        <div
+          class="image-container"
+          id="human-img"
+          style="background: linear-gradient(180deg, rgba(255,199,0,.15), rgba(255,199,0,.03)); border:1px solid rgba(255,199,0,.25);">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="transcon" aria-labelledby="transcon-h" style="background: #000;">
+    <div class="layer" style="
+      background-image:
+        linear-gradient(to bottom, rgba(0,0,0,.7), rgba(0,0,0,.6)),
+        url('https://i.imgur.com/yNSFTKj.png');
+      background-size: cover;
+      background-position: center;
+      opacity: 0.6;
+      filter: blur(0.5px);
+    "></div>
+    <div class="wrap content" style="position: relative; z-index: 2;">
+      <h2 id="transcon-h">One continent. One line.</h2>
+      <p>The planned combination with Norfolk Southern creates America's first transcontinental railroad—over <strong>50,000</strong> route miles across <strong>43</strong> states and <strong>10</strong> international gateways.</p>
+      <p>Coast-to-coast service, up to <strong>24–48 hours</strong> faster than trucking.</p>
+    </div>
+  </section>
+
+  <section id="advantage" aria-labelledby="adv-h">
+    <div class="wrap content text-center">
+      <h2 id="adv-h">See the advantage: Rail saves.</h2>
+      <p>Use the simulator below to instantly calculate the cost, capacity, and emissions benefits of shifting volume from highway to rail.</p>
+    </div>
+
+    <div class="wrap" style="padding: 2rem 0;">
+      <div class="calculator-grid">
+        <div class="card input-card">
+          <h3>Your Current Shipments</h3>
+          <label for="truckloads">Number of Long-Haul Truckloads per Month:</label>
+          <input type="number" id="truckloads" value="300" min="1" step="1" aria-live="polite">
+          <p class="result-detail">Assumes 500+ mile haul per load.</p>
+        </div>
+
+        <div class="kpi output-kpi" data-key="capacity">
+          <div class="num" id="trains-replaced">1.00</div>
+          <div class="label">Trains Replaced</div>
+          <p class="result-detail">One intermodal train moves the volume of <strong>~300</strong> trucks.</p>
+        </div>
+
+        <div class="kpi output-kpi" data-key="planet">
+          <div class="num" id="emissions-saved">75</div>
+          <div class="label">Emissions Reduced (%)</div>
+          <p class="result-detail">Up to <strong>75%</strong> fewer greenhouse gases per ton-mile.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="future" aria-labelledby="future-h">
+    <div class="wrap content split">
+      <div>
+        <h2 id="future-h">From predictive to autonomous.</h2>
+        <p>The next horizon is a living digital twin of the network. Predictive maintenance, autonomous yard moves, and machine-learning forecasts will allow the system to anticipate change and self-correct in real time.</p>
+      </div>
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <img src="https://i.imgur.com/zDTcHXb.png" alt="Digital Twin Visualization" style="width: 100%; height: 360px; object-fit: cover; border-radius: 12px; display: block;">
+      </div>
+    </div>
+  </section>
+
+  <section id="closing" aria-labelledby="closing-h" style="background: #000;">
+    <div class="layer" style="background-image: linear-gradient(to bottom, rgba(0,0,0,.5), rgba(0,0,0,.75)), url('https://i.imgur.com/HOtVRJ4.png'); background-size: cover; background-position: center;"></div>
+    <div class="wrap content" style="position: relative; z-index: 2;">
+      <h2 id="closing-h">A modern network for the future of freight.</h2>
+      <p>Every mile modernized. Every ton decarbonized. Every shipment visible. Union Pacific's transformation marks the next era of movement—where heritage meets innovation, and rail becomes the backbone of a cleaner, faster economy.</p>
+      <a class="cta" href="#hero" aria-label="Back to top">Discover the Journey ↑</a>
+    </div>
+  </section>
+
+  <footer role="contentinfo">
+    <div class="wrap" style="display:flex; align-items:center; gap:1rem;">
+      <div class="shield" aria-hidden="true" title="Union Pacific">UP</div>
+      <div>
+        <strong>Union Pacific — The Great American Network</strong>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <script>
+    (function() {
+      const onReady = (fn) => {
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+          setTimeout(fn, 0);
+        } else {
+          document.addEventListener('DOMContentLoaded', fn, { once: true });
+        }
+      };
+
+      // Rail vs. Truck Savings Calculator Logic
+      function setupSavingsCalculator() {
+        const truckloadsInput = document.getElementById('truckloads');
+        const trainsReplacedEl = document.getElementById('trains-replaced');
+        const emissionsSavedEl = document.getElementById('emissions-saved');
+
+        if (!truckloadsInput || !trainsReplacedEl || !emissionsSavedEl) {
+          console.warn('Savings Calculator elements not found, skipping logic.');
+          return;
+        }
+
+        const TRUCKS_PER_TRAIN = 300;
+        const EMISSIONS_SAVINGS_PERCENT = 75;
+
+        function updateCalculations() {
+          let loads = parseFloat(truckloadsInput.value) || 0;
+          if (loads <= 0) loads = 1;
+
+          const trains = loads / TRUCKS_PER_TRAIN;
+          const emissions = EMISSIONS_SAVINGS_PERCENT;
+
+          trainsReplacedEl.textContent = trains.toFixed(trains < 10 ? 2 : 0);
+          emissionsSavedEl.textContent = emissions;
+
+          if (typeof window.gsap !== 'undefined') {
+            gsap.fromTo(trainsReplacedEl,
+              { scale: 1.1, color: 'var(--up-yellow)' },
+              { scale: 1, color: 'var(--data-cyan)', duration: 0.4 }
+            );
+          }
+        }
+
+        updateCalculations();
+        truckloadsInput.addEventListener('input', updateCalculations);
+      }
+
+      onReady(() => {
+        try {
+          const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if (reduceMotion) document.documentElement.classList.add('no-motion');
+
+          const hasGSAP = typeof window.gsap !== 'undefined';
+          const hasScrollTrigger = typeof window.ScrollTrigger !== 'undefined';
+
+          if (!hasGSAP) {
+            console.warn('[Diagnostics] GSAP not available — animations skipped.');
+            return setupCountersFallback();
+          }
+
+          if (hasScrollTrigger) {
+            gsap.registerPlugin(ScrollTrigger);
+          } else {
+            console.warn('[Diagnostics] ScrollTrigger not available — parallax/scroll effects skipped.');
+          }
+
+          // PARALLAX LAYERS
+          if (!reduceMotion && hasScrollTrigger) {
+            document.querySelectorAll('[data-parallax-depth]').forEach(layer => {
+              const depth = parseFloat(layer.getAttribute('data-parallax-depth')) || 0.2;
+              gsap.to(layer, {
+                yPercent: () => depth * -20,
+                ease: 'none',
+                scrollTrigger: {
+                  trigger: layer.parentElement,
+                  start: 'top top',
+                  end: 'bottom top',
+                  scrub: true
+                }
+              });
+            });
+          }
+
+          // SECTION FADE-INS
+          if (!reduceMotion && hasScrollTrigger) {
+            document.querySelectorAll('section .wrap').forEach((el) => {
+              gsap.from(el, {
+                autoAlpha: 0,
+                y: 40,
+                duration: 0.8,
+                ease: 'power2.out',
+                scrollTrigger: {
+                  trigger: el.parentElement,
+                  start: 'top 75%'
+                }
+              });
+            });
+          }
+
+          // KPI COUNTERS
+          const animateNumber = (el) => {
+            const target = parseFloat(el.dataset.count);
+            const decimals = parseInt(el.dataset.decimals || '0', 10);
+            const suffix = el.dataset.suffix || '';
+            const obj = { val: 0 };
+            gsap.to(obj, {
+              val: target,
+              duration: 1.6,
+              ease: 'power3.out',
+              onUpdate: () => {
+                el.textContent = Number(obj.val).toLocaleString(undefined, {
+                  maximumFractionDigits: decimals,
+                  minimumFractionDigits: decimals
+                }) + suffix;
+              }
+            });
+          };
+
+          if (!reduceMotion) {
+            if (hasScrollTrigger) {
+              document.querySelectorAll('#proof .num').forEach((num) => {
+                ScrollTrigger.create({
+                  trigger: num,
+                  start: 'top 85%',
+                  onEnter: (self) => { animateNumber(num); self && self.kill && self.kill(); }
+                });
+              });
+            } else {
+              setupCountersFallback(animateNumber);
+            }
+          }
+
+          // Calculator
+          setupSavingsCalculator();
+
+          // Diagnostics
+          runDiagnostics({ hasGSAP, hasScrollTrigger, reduceMotion });
+        } catch (err) {
+          console.error('[Init Error]', err);
+        }
+      });
+
+      function setupCountersFallback(animateFn) {
+        const nums = document.querySelectorAll('#proof .num');
+        if (!nums.length) return;
+        const format = (val, d=0) => Number(val).toLocaleString(undefined, {
+          maximumFractionDigits: d,
+          minimumFractionDigits: d
+        });
+        if (!animateFn) {
+          nums.forEach((el) => {
+            const target = parseFloat(el.dataset.count);
+            const decimals = parseInt(el.dataset.decimals || '0', 10);
+            const suffix = el.dataset.suffix || '';
+            el.textContent = format(target, decimals) + suffix;
+          });
+          return;
+        }
+        if ('IntersectionObserver' in window) {
+          const io = new IntersectionObserver((entries, obs) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                animateFn(entry.target);
+                obs.unobserve(entry.target);
+              }
+            });
+          }, { rootMargin: '0px 0px -15% 0px' });
+          nums.forEach(n => io.observe(n));
+        } else {
+          nums.forEach(n => animateFn(n));
+        }
+      }
+
+      function runDiagnostics({ hasGSAP, hasScrollTrigger, reduceMotion }) {
+        try {
+          console.groupCollapsed('%cDiagnostics: Parallax Microsite', 'color: #27D4FF');
+          console.log('GSAP loaded:', hasGSAP);
+          console.log('ScrollTrigger loaded:', hasScrollTrigger);
+          console.log('Prefers reduced motion:', reduceMotion);
+          console.assert(!!document.querySelector('#hero'), 'Test 1 FAIL: #hero missing');
+          console.assert(document.querySelectorAll('#proof .num').length === 4, 'Test 2 FAIL: KPI counters missing');
+          if (hasGSAP) {
+            const obj = { v: 0 };
+            gsap.to(obj, { v: 1, duration: 0.01, onComplete: () => console.log('GSAP tween smoke test: PASS') });
+          }
+          if (hasGSAP && hasScrollTrigger) {
+            const dummy = document.createElement('div');
+            document.body.appendChild(dummy);
+            try {
+              ScrollTrigger.create({ trigger: dummy, start: 'top top', end: 'bottom top' });
+              console.log('ScrollTrigger smoke test: PASS');
+            } catch(e) {
+              console.warn('ScrollTrigger smoke test: FAIL', e);
+            }
+            dummy.remove();
+          }
+          console.groupEnd();
+        } catch (e) {
+          console.warn('Diagnostics encountered an error:', e);
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
